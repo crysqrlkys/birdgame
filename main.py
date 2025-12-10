@@ -4,7 +4,6 @@ from mss import mss
 
 from utils import get_monitor, get_timer_coords
 
-# TODO: model
 # TODO: constants
 # TODO: abstract detector
 
