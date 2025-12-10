@@ -1,5 +1,6 @@
-REFERENCE_RESOLUTION = (2560, 1440)
-REFERENCE_TIMER_COORDS = (70, 50, 170, 100)
+# references
+TWOK_RESOLUTION = (2560, 1440)
+TWOK_TIMER_COORDS = (70, 50, 170, 100)
 
 
 def get_monitor(monitors: list[dict], index: int | None = None):
@@ -16,6 +17,6 @@ def get_monitor(monitors: list[dict], index: int | None = None):
 
 def get_timer_coords(monitor):
     width, height = monitor["width"], monitor["height"]
-    base_width, base_height = REFERENCE_RESOLUTION
+    base_width, base_height = TWOK_RESOLUTION
     scale = min(width / base_width, height / base_height)
-    return tuple(int(coord * scale) for coord in REFERENCE_TIMER_COORDS)
+    return tuple(int(coord * scale) for coord in TWOK_TIMER_COORDS)
