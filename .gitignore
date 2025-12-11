@@ -2,3 +2,5 @@ venv/
 __pycache__/
 source/
 .env
+*.pth
+*.7z
