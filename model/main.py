@@ -81,7 +81,7 @@ def test_model():
 
     model.eval()
 
-    test_img_path = "dataset/val/test_1.jpg"
+    test_img_path = "dataset/test/test_1.jpg"
     test_img = Image.open(test_img_path).convert("RGB")
     test_img, _ = simple_resize(test_img)
     transform = T.ToTensor()

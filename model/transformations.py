@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from PIL import Image
 
@@ -45,8 +46,11 @@ def letterbox(image, target=None, img_size=640):
 
 
 def simple_resize(image, target=None, target_size=640):
-
-    orig_width, orig_height = image.size
+    if isinstance(image, np.ndarray):
+        orig_height, orig_width, _ = image.shape
+        image = Image.fromarray(image)
+    else:
+        orig_width, orig_height = image.size
 
     resized_image = image.resize((target_size, target_size), Image.BILINEAR)
 
@@ -69,7 +73,17 @@ def simple_resize(image, target=None, target_size=640):
     return resized_image, target
 
 
-def inverse_simple_resize(boxes, scale_x, scale_y):
+def inverse_simple_resize_boxes(original_frame, boxes, target_size=640):
+    if isinstance(original_frame, np.ndarray):
+        orig_height, orig_width, _ = original_frame.shape
+        original_frame = Image.fromarray(original_frame)
+    else:
+        orig_width, orig_height = original_frame.size
+    orig_width, orig_height = original_frame.size
+
+    scale_x = target_size / orig_width
+    scale_y = target_size / orig_height
+
     if boxes is None or len(boxes) == 0:
         return boxes
 

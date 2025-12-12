@@ -44,6 +44,15 @@ def create_retinanet_model(num_classes=3):
     return model
 
 
+def load_retinanet_model(model_name="moorhuhn_retinanet.pth"):
+    model = create_retinanet_model()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    checkpoint = torch.load(model_name, map_location=device)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    model.eval()
+    return model, device
+
+
 # test
 def create_ssd_model(num_classes=3):
     model = ssd300_vgg16(weights=SSD300_VGG16_Weights.DEFAULT)

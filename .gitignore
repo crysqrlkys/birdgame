@@ -4,3 +4,4 @@ source/
 .env
 *.pth
 *.7z
+screenshot.png

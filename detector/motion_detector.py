@@ -15,54 +15,11 @@ class MotionDetector(AbstractDetector):
         self.fgbg = cv2.createBackgroundSubtractorMOG2(history=300, detectShadows=False)
         self.timer_coords = get_timer_coords(self.monitor)
 
-        # cv2.namedWindow("Trackbars", cv2.WINDOW_NORMAL)
-        # cv2.resizeWindow("Trackbars", 800, 600)
-
-        # cv2.createTrackbar("LH", "Trackbars", 0, 179, self._noop)
-        # cv2.createTrackbar("LS", "Trackbars", 30, 255, self._noop)
-        # cv2.createTrackbar("LV", "Trackbars", 0, 255, self._noop)
-        # cv2.createTrackbar("UH", "Trackbars", 179, 179, self._noop)
-        # cv2.createTrackbar("US", "Trackbars", 255, 255, self._noop)
-        # cv2.createTrackbar("UV", "Trackbars", 255, 255, self._noop)
-
-        # cv2.createTrackbar("LL", "Trackbars", 0, 255, self._noop)
-        # cv2.createTrackbar("LGR", "Trackbars", 0, 255, self._noop)
-        # cv2.createTrackbar("LBY", "Trackbars", 0, 255, self._noop)
-        # cv2.createTrackbar("UL", "Trackbars", 255, 255, self._noop)
-        # cv2.createTrackbar("UGR", "Trackbars", 255, 255, self._noop)
-        # cv2.createTrackbar("UBY", "Trackbars", 255, 255, self._noop)
-
-    # def _noop(self, _):
-    #     pass
-
     def _apply_color_masks(self, frame):
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        # lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
-
-        # lh = cv2.getTrackbarPos("LH", "Trackbars")
-        # ls = cv2.getTrackbarPos("LS", "Trackbars")
-        # lv = cv2.getTrackbarPos("LV", "Trackbars")
-        # uh = cv2.getTrackbarPos("UH", "Trackbars")
-        # us = cv2.getTrackbarPos("US", "Trackbars")
-        # uv = cv2.getTrackbarPos("UV", "Trackbars")
-
         lower_hsv = np.array([0, 0, 0])
         upper_hsv = np.array([25, 255, 255])
-        mask_hsv = cv2.inRange(hsv, lower_hsv, upper_hsv)
-
-        # ll = cv2.getTrackbarPos("LL", "Trackbars")
-        # lgr = cv2.getTrackbarPos("LGR", "Trackbars")
-        # lby = cv2.getTrackbarPos("LBY", "Trackbars")
-        # ul = cv2.getTrackbarPos("UL", "Trackbars")
-        # ugr = cv2.getTrackbarPos("UGR", "Trackbars")
-        # uby = cv2.getTrackbarPos("UBY", "Trackbars")
-
-        # lower_lab = np.array([0, 0, 0])
-        # upper_lab = np.array([255, 255, 255])
-        # mask_lab = cv2.inRange(lab, lower_lab, upper_lab)
-
-        # mask = cv2.bitwise_and(mask_hsv, mask_lab)
-        mask = mask_hsv
+        mask = cv2.inRange(hsv, lower_hsv, upper_hsv)
 
         # hide timer
         x1, y1, x2, y2 = self.timer_coords

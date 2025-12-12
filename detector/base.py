@@ -13,8 +13,6 @@ class AbstractDetector:
 
         cv2.namedWindow("Detect", cv2.WINDOW_NORMAL)
         cv2.resizeWindow("Detect", 1280, 720)
-        cv2.namedWindow("Mask", cv2.WINDOW_NORMAL)
-        cv2.resizeWindow("Mask", 800, 600)
 
     def process_frame(self, frame, *args, **kwargs):
         raise NotImplementedError("Subclasses must implement this method")
@@ -32,6 +30,8 @@ class AbstractDetector:
 
             cv2.imshow("Detect", frame_with_boxes)
             if mask is not None:
+                cv2.namedWindow("Mask", cv2.WINDOW_NORMAL)
+                cv2.resizeWindow("Mask", 800, 600)
                 cv2.imshow("Mask", mask)
 
             key = cv2.waitKey(1)
