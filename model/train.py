@@ -1,9 +1,8 @@
 import torch
 import torch.optim as optim
-from dataset import MoorhuhnDataset
+from models import create_retinanet_model
+from moorhuhn_dataset import MoorhuhnDataset
 from torch.utils.data import DataLoader
-
-from model import create_retinanet_model
 
 IMAGES_FOLDER = "dataset/images"
 ANNOTATION_FILE = "dataset/annotations/coco.json"
@@ -19,10 +18,9 @@ def train_model(model, train_loader, epochs=10):
         weight_decay=0.0005,
     )
 
-    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
-        T_0=5,
-        T_mult=2,
+        T_max=epochs,
         eta_min=1e-6,
     )
 
@@ -47,6 +45,9 @@ def train_model(model, train_loader, epochs=10):
             num_batches += 1
 
         avg_train_loss = train_loss / num_batches if num_batches > 0 else 0
+
+        # validation dataset removed
+        # validate and calculate loss
 
         scheduler.step()
 

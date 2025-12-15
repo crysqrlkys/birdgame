@@ -26,7 +26,7 @@ class AiDetector(AbstractDetector):
 
         cv2.destroyAllWindows()
 
-    # slow and inacurate, too many objects
+    # test (worse and slower than continuos)
     def _interval_detection(self):
 
         multi_tracker = cv2.legacy.MultiTracker_create()

@@ -3,9 +3,9 @@ import numpy as np
 import torch
 
 
-# works like ass, small birds become too small
+# works like ass, small birds become too small (needs precise anchor adjustment)
 def letterbox(image, target=None, img_size=640):
-    original_w, original_h = image.size
+    original_w, original_h = image.shape[:2]
 
     scale = min(img_size / original_w, img_size / original_h)
     new_w = int(original_w * scale)
@@ -22,10 +22,8 @@ def letterbox(image, target=None, img_size=640):
         boxes = target["boxes"]
 
         scaled_boxes = boxes * scale
-        scaled_boxes[:, 0] += dx
-        scaled_boxes[:, 1] += dy
-        scaled_boxes[:, 2] += dx
-        scaled_boxes[:, 3] += dy
+        scaled_boxes[:, [0, 2]] += dx
+        scaled_boxes[:, [1, 3]] += dy
 
         scaled_boxes[:, 0::2] = scaled_boxes[:, 0::2].clamp(0, img_size)
         scaled_boxes[:, 1::2] = scaled_boxes[:, 1::2].clamp(0, img_size)
@@ -45,44 +43,67 @@ def letterbox(image, target=None, img_size=640):
     return padded_image, target
 
 
-def simple_resize(image, target=None, target_size=640):
-    original_height, original_width, _ = image.shape
-    resized_image = cv2.resize(
-        image, (target_size, target_size), interpolation=cv2.INTER_AREA
-    )
+def restore_letterbox_boxes(image, boxes, target_size=640):
+    if boxes.numel() == 0:
+        return boxes
 
-    scale_x = target_size / original_width
-    scale_y = target_size / original_height
+    original_w, original_h = image.shape[:2]
 
-    if target is not None:
-        boxes = target["boxes"]
-        if len(boxes) > 0:
-            scaled_boxes = boxes.clone()
-            scaled_boxes[:, 0] *= scale_x
-            scaled_boxes[:, 2] *= scale_x
-            scaled_boxes[:, 1] *= scale_y
-            scaled_boxes[:, 3] *= scale_y
+    scale = min(target_size / original_w, target_size / original_h)
+    new_w = int(original_w * scale)
+    new_h = int(original_h * scale)
 
-            target["boxes"] = scaled_boxes
+    dx = (target_size - new_w) // 2
+    dy = (target_size - new_h) // 2
 
-            return resized_image, target
+    restored = boxes.clone()
 
-    return resized_image, target
+    restored[:, [0, 2]] -= dx
+    restored[:, [1, 3]] -= dy
+
+    restored = restored / scale
+
+    restored[:, 0::2] = restored[:, 0::2].clamp(0, original_w)
+    restored[:, 1::2] = restored[:, 1::2].clamp(0, original_h)
+
+    return restored
 
 
-def inverse_simple_resize_boxes(original_frame, boxes, target_size=640):
-    original_height, original_width, _ = original_frame.shape
+def get_scale_factors(orig_shape, target_size=640):
+    h, w = orig_shape
+    return target_size / w, target_size / h
 
-    scale_x = target_size / original_width
-    scale_y = target_size / original_height
 
+def scale_boxes(boxes, scale_x, scale_y):
     if boxes is None or len(boxes) == 0:
         return boxes
 
-    original_boxes = boxes.clone()
-    original_boxes[:, 0] /= scale_x
-    original_boxes[:, 2] /= scale_x
-    original_boxes[:, 1] /= scale_y
-    original_boxes[:, 3] /= scale_y
+    scaled = boxes.clone()
+    scaled[:, [0, 2]] *= scale_x
+    scaled[:, [1, 3]] *= scale_y
+    return scaled
 
-    return original_boxes
+
+def simple_resize(image, target_size=640, target=None):
+    h, w = image.shape[:2]
+    resized = cv2.resize(image, (target_size, target_size), cv2.INTER_AREA)
+    scale_x, scale_y = get_scale_factors((h, w), target_size)
+
+    if target is not None and "boxes" in target:
+        target["boxes"] = scale_boxes(target["boxes"], scale_x, scale_y)
+
+    return resized, target
+
+
+def restore_simple_resize_boxes(image, boxes, target_size=640):
+    h, w = image.shape[:2]
+    if boxes is None or len(boxes) == 0:
+        return boxes
+
+    scale_x, scale_y = get_scale_factors((h, w), target_size)
+
+    restored = boxes.clone()
+    restored[:, [0, 2]] /= scale_x
+    restored[:, [1, 3]] /= scale_y
+
+    return restored

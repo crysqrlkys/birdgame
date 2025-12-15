@@ -3,14 +3,14 @@ import torchvision
 from torchvision import transforms as T
 
 from detector.base.ai_detector import AiDetector
-from model.model import load_retinanet_model
-from model.transformations import inverse_simple_resize_boxes, simple_resize
+from model.models import load_retinanet_model
+from model.transformations import restore_simple_resize_boxes, simple_resize
 
 
-# Slow (~0.5 sec for every inference)
 class RetinaNetDetector(AiDetector):
 
-    CONFIDENCE_THRESHOLD = 0.35
+    CONFIDENCE_THRESHOLD = 0.2
+    IOU_THRESHOLD = 0.2
 
     def __init__(self, monitor_index: int | None = None, *args, **kwargs):
         super().__init__(monitor_index=monitor_index, *args, **kwargs)
@@ -35,13 +35,13 @@ class RetinaNetDetector(AiDetector):
 
         if len(boxes) > 0:
             keep_indices = torchvision.ops.nms(
-                boxes=boxes, scores=scores, iou_threshold=0.2
+                boxes=boxes, scores=scores, iou_threshold=self.IOU_THRESHOLD
             )
 
             boxes = boxes[keep_indices]
             labels = labels[keep_indices]
 
-            boxes = inverse_simple_resize_boxes(frame, boxes)
+            boxes = restore_simple_resize_boxes(frame, boxes)
             boxes = boxes.cpu().numpy()
             labels = labels.cpu().numpy()
 

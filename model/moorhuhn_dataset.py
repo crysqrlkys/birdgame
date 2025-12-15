@@ -43,7 +43,6 @@ class MoorhuhnDataset(Dataset):
         img_path = os.path.join(self.images_dir, image_info["file_name"])
         image = cv2.imread(img_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
-        # image = Image.open(img_path).convert("RGB")
 
         annotations = self.image_id_to_annotations.get(image_id, [])
 
@@ -82,7 +81,6 @@ class MoorhuhnDataset(Dataset):
             self.transform(image)
         else:
             image, target = simple_resize(image, target=target)
-
             image = T.ToTensor()(image)
 
         return image, target

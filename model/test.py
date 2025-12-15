@@ -5,17 +5,11 @@ from PIL import Image
 from torchvision import transforms as T
 from transformations import simple_resize
 
-from model import create_retinanet_model
+from model.models import load_retinanet_model
 
 
 def test_model():
-    model = create_retinanet_model()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    checkpoint = torch.load("moorhuhn_retinanet.pth", map_location=device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-
-    model.eval()
+    model, device = load_retinanet_model()
 
     test_img_path = "dataset/test/test_1.jpg"
     test_img = Image.open(test_img_path).convert("RGB")
@@ -26,9 +20,9 @@ def test_model():
     with torch.no_grad():
         predictions = model(test_tensor)
 
-    boxes = predictions[0]["boxes"].cpu().numpy()
-    scores = predictions[0]["scores"].cpu().numpy()
-    labels = predictions[0]["labels"].cpu().numpy()
+    boxes = predictions[0]["boxes"]
+    scores = predictions[0]["scores"]
+    labels = predictions[0]["labels"]
 
     conf_threshold = 0.4
     conf_mask = scores > conf_threshold
@@ -38,11 +32,6 @@ def test_model():
     labels = labels[conf_mask]
 
     if len(boxes) > 0:
-        if not isinstance(boxes, torch.Tensor):
-            boxes = torch.tensor(boxes)
-        if not isinstance(scores, torch.Tensor):
-            scores = torch.tensor(scores)
-
         keep_indices = torchvision.ops.nms(
             boxes=boxes, scores=scores, iou_threshold=0.2
         )
