@@ -1,6 +1,4 @@
-# references
-TWOK_RESOLUTION = (2560, 1440)
-TWOK_TIMER_COORDS = (70, 50, 170, 100)
+from detector.constants import TWOK_RESOLUTION, TWOK_TIMER_COORDS
 
 
 def get_monitor(monitors: list[dict], index: int | None = None):

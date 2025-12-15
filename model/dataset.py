@@ -1,12 +1,11 @@
 import json
 import os
 
+import cv2
 import torch
-from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms as T
-
-from transformations import letterbox, simple_resize
+from transformations import simple_resize
 
 
 class MoorhuhnDataset(Dataset):
@@ -42,7 +41,9 @@ class MoorhuhnDataset(Dataset):
         image_info = self.image_id_to_info[image_id]
 
         img_path = os.path.join(self.images_dir, image_info["file_name"])
-        image = Image.open(img_path).convert("RGB")
+        image = cv2.imread(img_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
+        # image = Image.open(img_path).convert("RGB")
 
         annotations = self.image_id_to_annotations.get(image_id, [])
 
@@ -80,7 +81,6 @@ class MoorhuhnDataset(Dataset):
         if self.transform is not None:
             self.transform(image)
         else:
-            # image, target = letterbox(image, target=target)
             image, target = simple_resize(image, target=target)
 
             image = T.ToTensor()(image)

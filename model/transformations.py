@@ -1,9 +1,9 @@
+import cv2
 import numpy as np
 import torch
-from PIL import Image
 
 
-# works like ass
+# works like ass, small birds become too small
 def letterbox(image, target=None, img_size=640):
     original_w, original_h = image.size
 
@@ -11,12 +11,12 @@ def letterbox(image, target=None, img_size=640):
     new_w = int(original_w * scale)
     new_h = int(original_h * scale)
 
-    resized_image = image.resize((new_w, new_h), Image.BILINEAR)
+    resized_image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_AREA)
 
-    padded_image = Image.new("RGB", (img_size, img_size), (0, 0, 0))
+    padded_image = np.zeros((img_size, img_size, 3), dtype=np.uint8)
     dx = (img_size - new_w) // 2
     dy = (img_size - new_h) // 2
-    padded_image.paste(resized_image, (dx, dy))
+    padded_image[dy : dy + new_h, dx : dx + new_w] = resized_image
 
     if target is not None and "boxes" in target:
         boxes = target["boxes"]
@@ -46,16 +46,13 @@ def letterbox(image, target=None, img_size=640):
 
 
 def simple_resize(image, target=None, target_size=640):
-    if isinstance(image, np.ndarray):
-        orig_height, orig_width, _ = image.shape
-        image = Image.fromarray(image)
-    else:
-        orig_width, orig_height = image.size
+    original_height, original_width, _ = image.shape
+    resized_image = cv2.resize(
+        image, (target_size, target_size), interpolation=cv2.INTER_AREA
+    )
 
-    resized_image = image.resize((target_size, target_size), Image.BILINEAR)
-
-    scale_x = target_size / orig_width
-    scale_y = target_size / orig_height
+    scale_x = target_size / original_width
+    scale_y = target_size / original_height
 
     if target is not None:
         boxes = target["boxes"]
@@ -74,15 +71,10 @@ def simple_resize(image, target=None, target_size=640):
 
 
 def inverse_simple_resize_boxes(original_frame, boxes, target_size=640):
-    if isinstance(original_frame, np.ndarray):
-        orig_height, orig_width, _ = original_frame.shape
-        original_frame = Image.fromarray(original_frame)
-    else:
-        orig_width, orig_height = original_frame.size
-    orig_width, orig_height = original_frame.size
+    original_height, original_width, _ = original_frame.shape
 
-    scale_x = target_size / orig_width
-    scale_y = target_size / orig_height
+    scale_x = target_size / original_width
+    scale_y = target_size / original_height
 
     if boxes is None or len(boxes) == 0:
         return boxes

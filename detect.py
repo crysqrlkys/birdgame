@@ -1,7 +1,7 @@
 import sys
 
-from detector.ai_detector import AiDetector
 from detector.motion_detector import MotionDetector
+from detector.retinanet_detector import RetinaNetDetector
 
 
 class DetectorFactory:
@@ -11,7 +11,7 @@ class DetectorFactory:
 
         detectors = {
             "--cv": MotionDetector,
-            "--ai": AiDetector,
+            "--ai": RetinaNetDetector,
         }
 
         detector_class = detectors.get(detector_type)
