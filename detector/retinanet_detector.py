@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torchvision
 from torchvision import transforms as T
@@ -12,13 +13,16 @@ class RetinaNetDetector(AiDetector):
     CONFIDENCE_THRESHOLD = 0.2
     IOU_THRESHOLD = 0.2
 
-    def __init__(self, monitor_index: int | None = None, *args, **kwargs):
+    def __init__(
+        self, monitor_index: int | None = None, target_size: int = 640, *args, **kwargs
+    ):
         super().__init__(monitor_index=monitor_index, *args, **kwargs)
         self.model, self.device = load_retinanet_model()
         self.transform = T.ToTensor()
+        self.target_size = target_size
 
-    def process_frame(self, frame):
-        frame_resized, _ = simple_resize(frame.copy())
+    def process_frame(self, frame: np.ndarray):
+        frame_resized, _ = simple_resize(frame.copy(), self.target_size)
         frame_tensor = self.transform(frame_resized).unsqueeze(0).to(self.device)
 
         with torch.no_grad():

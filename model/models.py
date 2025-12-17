@@ -1,14 +1,16 @@
 import torch
 from torchvision.models import ResNet50_Weights
 from torchvision.models.detection import (
+    RetinaNet,
     SSD300_VGG16_Weights,
     retinanet_resnet50_fpn,
     ssd300_vgg16,
 )
 from torchvision.models.detection.anchor_utils import AnchorGenerator
+from torchvision.models.detection.ssd import SSD
 
 
-def create_retinanet_model(num_classes=3):
+def create_retinanet_model(num_classes: int = 3) -> RetinaNet:
     anchor_sizes = (
         (32, 64, 128),
         (64, 128, 256),
@@ -44,7 +46,7 @@ def create_retinanet_model(num_classes=3):
     return model
 
 
-def load_retinanet_model(model_name="moorhuhn_retinanet.pth"):
+def load_retinanet_model(model_name: str = "moorhuhn_retinanet.pth"):
     model = create_retinanet_model()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     checkpoint = torch.load(model_name, map_location=device)
@@ -55,7 +57,7 @@ def load_retinanet_model(model_name="moorhuhn_retinanet.pth"):
 
 
 # test
-def create_ssd_model(num_classes=3):
+def create_ssd_model(num_classes: int = 3) -> SSD:
     model = ssd300_vgg16(weights=SSD300_VGG16_Weights.DEFAULT)
 
     num_anchors = model.anchor_generator.num_anchors_per_location()

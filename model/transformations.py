@@ -4,18 +4,18 @@ import torch
 
 
 # works like ass, small birds become too small (needs precise anchor adjustment)
-def letterbox(image, target=None, img_size=640):
+def letterbox(image, target_size=640, target=None):
     original_w, original_h = image.shape[:2]
 
-    scale = min(img_size / original_w, img_size / original_h)
+    scale = min(target_size / original_w, target_size / original_h)
     new_w = int(original_w * scale)
     new_h = int(original_h * scale)
 
     resized_image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_AREA)
 
-    padded_image = np.zeros((img_size, img_size, 3), dtype=np.uint8)
-    dx = (img_size - new_w) // 2
-    dy = (img_size - new_h) // 2
+    padded_image = np.zeros((target_size, target_size, 3), dtype=np.uint8)
+    dx = (target_size - new_w) // 2
+    dy = (target_size - new_h) // 2
     padded_image[dy : dy + new_h, dx : dx + new_w] = resized_image
 
     if target is not None and "boxes" in target:
@@ -25,8 +25,8 @@ def letterbox(image, target=None, img_size=640):
         scaled_boxes[:, [0, 2]] += dx
         scaled_boxes[:, [1, 3]] += dy
 
-        scaled_boxes[:, 0::2] = scaled_boxes[:, 0::2].clamp(0, img_size)
-        scaled_boxes[:, 1::2] = scaled_boxes[:, 1::2].clamp(0, img_size)
+        scaled_boxes[:, 0::2] = scaled_boxes[:, 0::2].clamp(0, target_size)
+        scaled_boxes[:, 1::2] = scaled_boxes[:, 1::2].clamp(0, target_size)
 
         valid_mask = (scaled_boxes[:, 2] > scaled_boxes[:, 0]) & (
             scaled_boxes[:, 3] > scaled_boxes[:, 1]

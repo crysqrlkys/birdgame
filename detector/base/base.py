@@ -8,7 +8,11 @@ from detector.utils import get_monitor
 class AbstractDetector:
 
     def __init__(
-        self, monitor_index: int | None = None, window_name: str = None, *args, **kwargs
+        self,
+        monitor_index: int | None = None,
+        window_name: str | None = None,
+        *args,
+        **kwargs
     ):
         self.sct = mss()
         self.monitor = get_monitor(monitors=self.sct.monitors, index=monitor_index)

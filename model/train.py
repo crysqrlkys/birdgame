@@ -8,7 +8,7 @@ IMAGES_FOLDER = "dataset/images"
 ANNOTATION_FILE = "dataset/annotations/coco.json"
 
 
-def train_model(model, train_loader, epochs=10):
+def train_model(model, train_loader: DataLoader, epochs: int = 10):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
 

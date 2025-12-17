@@ -9,10 +9,11 @@ from transformations import simple_resize
 
 
 class MoorhuhnDataset(Dataset):
-    def __init__(self, images_dir, annotation_file, img_size=640, transform=None):
+    def __init__(
+        self, images_dir, annotation_file, target_size=640, transform=simple_resize
+    ):
         self.images_dir = images_dir
-        self.img_size = img_size
-
+        self.target_size = target_size
         self.transform = transform
 
         with open(annotation_file, "r") as f:
@@ -77,10 +78,9 @@ class MoorhuhnDataset(Dataset):
             "iscrowd": torch.zeros((len(boxes),), dtype=torch.int64),
         }
 
-        if self.transform is not None:
-            self.transform(image)
-        else:
-            image, target = simple_resize(image, target=target)
-            image = T.ToTensor()(image)
+        image, target = self.transform(
+            image=image, target=target, target_size=self.target_size
+        )
+        image = T.ToTensor()(image)
 
         return image, target

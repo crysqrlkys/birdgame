@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 
 from detector.base.base import AbstractDetector
+from detector.constants import MASK_WINDOW_NAME
 
 
 class SimpleDetector(AbstractDetector):
@@ -19,9 +20,9 @@ class SimpleDetector(AbstractDetector):
 
             cv2.imshow(self.window_name, frame_with_boxes)
             if mask is not None:
-                cv2.namedWindow("Mask", cv2.WINDOW_NORMAL)
-                cv2.resizeWindow("Mask", 800, 600)
-                cv2.imshow("Mask", mask)
+                cv2.namedWindow(MASK_WINDOW_NAME, cv2.WINDOW_NORMAL)
+                cv2.resizeWindow(MASK_WINDOW_NAME, 800, 600)
+                cv2.imshow(MASK_WINDOW_NAME, mask)
 
             key = cv2.waitKey(1)
             if key & 0xFF == 27:
@@ -31,7 +32,7 @@ class SimpleDetector(AbstractDetector):
 
         cv2.destroyAllWindows()
 
-    def draw_boxes(self, frame, boxes):
+    def draw_boxes(self, frame: np.ndarray, boxes) -> np.ndarray:
         for x, y, w, h in boxes:
             cv2.rectangle(frame, (x, y), (x + w, y + h), color=(0, 255, 0), thickness=2)
             cv2.putText(

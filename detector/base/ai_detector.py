@@ -67,7 +67,7 @@ class AiDetector(AbstractDetector):
         else:
             self._continuos_detection()
 
-    def draw_boxes(self, frame, boxes, labels=None):
+    def draw_boxes(self, frame: np.ndarray, boxes, labels=None) -> np.ndarray:
         labels = labels if labels is not None else [0] * len(boxes)
         for box, label in zip(boxes, labels):
             x1, y1, x2, y2 = (int(c) for c in box)
