@@ -1,11 +1,10 @@
 import numpy as np
 import torch
 import torchvision
-from torchvision import transforms as T
 
 from detector.base.ai_detector import AiDetector
 from model.models import load_retinanet_model
-from model.transformations import restore_simple_resize_boxes, simple_resize
+from model.transformations import infer_simple_resize, restore_simple_resize_boxes
 
 
 class RetinaNetDetector(AiDetector):
@@ -18,12 +17,12 @@ class RetinaNetDetector(AiDetector):
     ):
         super().__init__(monitor_index=monitor_index, *args, **kwargs)
         self.model, self.device = load_retinanet_model()
-        self.transform = T.ToTensor()
-        self.target_size = target_size
+        self.transform = infer_simple_resize(target_size=target_size)
 
     def process_frame(self, frame: np.ndarray):
-        frame_resized, _ = simple_resize(frame.copy(), self.target_size)
-        frame_tensor = self.transform(frame_resized).unsqueeze(0).to(self.device)
+        frame_tensor = torch.from_numpy(frame.copy()).permute(2, 0, 1)
+        frame_tensor = self.transform(frame_tensor)
+        frame_tensor = frame_tensor.unsqueeze(0).to(self.device)
 
         with torch.no_grad():
             predictions = self.model(frame_tensor)

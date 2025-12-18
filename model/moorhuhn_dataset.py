@@ -3,17 +3,20 @@ import os
 
 import cv2
 import torch
+import torchvision.transforms.v2 as v2
+from PIL import Image
 from torch.utils.data import Dataset
-from torchvision import transforms as T
-from transformations import simple_resize
+from torchvision.tv_tensors import BoundingBoxes, BoundingBoxFormat
 
 
 class MoorhuhnDataset(Dataset):
     def __init__(
-        self, images_dir, annotation_file, target_size=640, transform=simple_resize
+        self,
+        images_dir: str,
+        annotation_file: str,
+        transform: v2.Compose = None,
     ):
         self.images_dir = images_dir
-        self.target_size = target_size
         self.transform = transform
 
         with open(annotation_file, "r") as f:
@@ -42,8 +45,13 @@ class MoorhuhnDataset(Dataset):
         image_info = self.image_id_to_info[image_id]
 
         img_path = os.path.join(self.images_dir, image_info["file_name"])
-        image = cv2.imread(img_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
+        image = Image.open(img_path).convert("RGB")
+
+        width, height = image.size
+
+        # image = cv2.imread(img_path)
+        # image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
+        # image = torch.from_numpy(image).permute(2, 0, 1)  # .float() / 255.0
 
         annotations = self.image_id_to_annotations.get(image_id, [])
 
@@ -59,28 +67,18 @@ class MoorhuhnDataset(Dataset):
                 boxes.append([x1, y1, x2, y2])
                 labels.append(category_id)
 
-        if len(boxes) > 0:
-            boxes = torch.as_tensor(boxes, dtype=torch.float32)
-            labels = torch.as_tensor(labels, dtype=torch.int64)
-        else:
-            boxes = torch.zeros((0, 4), dtype=torch.float32)
-            labels = torch.zeros((0,), dtype=torch.int64)
+        boxes = BoundingBoxes(
+            boxes, format=BoundingBoxFormat.XYXY, canvas_size=(height, width)
+        )
+        labels = torch.as_tensor(labels, dtype=torch.int64)
 
         target = {
             "boxes": boxes,
             "labels": labels,
             "image_id": torch.tensor([image_id]),
-            "area": (
-                (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
-                if len(boxes) > 0
-                else torch.zeros((0,), dtype=torch.float32)
-            ),
-            "iscrowd": torch.zeros((len(boxes),), dtype=torch.int64),
         }
 
-        image, target = self.transform(
-            image=image, target=target, target_size=self.target_size
-        )
-        image = T.ToTensor()(image)
+        if self.transform is not None:
+            image, target = self.transform(image, target)
 
         return image, target

@@ -3,12 +3,13 @@ import torch.optim as optim
 from models import create_retinanet_model
 from moorhuhn_dataset import MoorhuhnDataset
 from torch.utils.data import DataLoader
+from transformations import create_simple_resize
 
 IMAGES_FOLDER = "dataset/images"
 ANNOTATION_FILE = "dataset/annotations/coco.json"
 
 
-def train_model(model, train_loader: DataLoader, epochs: int = 10):
+def train_model(model, train_loader: DataLoader, epochs: int = 15):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
@@ -69,7 +70,10 @@ def train_model(model, train_loader: DataLoader, epochs: int = 10):
 
 
 if __name__ == "__main__":
-    dataset = MoorhuhnDataset(images_dir=IMAGES_FOLDER, annotation_file=ANNOTATION_FILE)
+    transform = create_simple_resize()
+    dataset = MoorhuhnDataset(
+        images_dir=IMAGES_FOLDER, annotation_file=ANNOTATION_FILE, transform=transform
+    )
     train_loader = DataLoader(
         dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
     )
